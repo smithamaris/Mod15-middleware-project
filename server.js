@@ -20,7 +20,7 @@ const app = express();
 // ========= Middlewares =================
 app.use(morgan('dev')); // logger
 app.use(express.json()); // body parser
-app.use(cors({origin: "http://localhost:5173"})); // Allow requests from a specific origin
+app.use(cors({origin: process.env.FRONTEND_URL})); // Allow requests from a specific origin
 require('./config/passport');
 
 
