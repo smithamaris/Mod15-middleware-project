@@ -91,7 +91,8 @@ projectRouter.post("/", async (req, res) => {
 
 /**
  * PUT/api/projects/project id #
- */
+ */ 
+// Update
 // projectRouter.put('/:projectId',async(req,res)=> {
 //     res.send("Create project..")
 // });

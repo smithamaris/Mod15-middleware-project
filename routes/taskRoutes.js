@@ -73,19 +73,19 @@ taskRouter.get("/:projectId", async (req, res) => {
 });
 
 /**
- * PUT/api/tasks/taskId #
+ * PUT/api/tasks/taskId/task
  */
 
-taskRouter.put('/:id', async (req, res) => {
+taskRouter.put('/:taskId', async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id)
+        const task = await Task.findById(req.params.taskId)
         if (!task) return res.status(404).json({ message: 'Task not found' });
 
-        if (task.user.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Not authorized to update this task' });
-        }
+        // if (task.user.toString() !== req.user._id.toString()) {
+        //     return res.status(403).json({ message: 'Not authorized to update this task' });
+        // }
 
-        const updated = await Task.findByIdAndUpdate(req.params.id, { new: true});
+        const updated = await Task.findByIdAndUpdate(req.params.taskId, req.body, { new: true});
 
         res.json(updated);
     } catch (error) {
@@ -95,20 +95,19 @@ taskRouter.put('/:id', async (req, res) => {
 });
 
 /**
- * DELETE /api/projects/projectId
+ * DELETE /api/task/projectId
  */
 
-taskRouter.delete("/:projectId", async (req, res) => {
+taskRouter.delete("/:taskId", async (req, res) => {
   try {
-        const deleteProject = await Project.findById(req.params.projectId)//finding the user's project with the help of id.
-    if (req.user._id !== deleteProject.user.toString()){
-      return res.status(403).json({message: "This user is not authorized to Delete this project."});
-    }
+        const deleteTask = await Task.findByIdAndDelete(req.params.taskId)//finding the user's project with the help of id.
+    // if (req.user._id !== deleteProject.user.toString()){
+    //   return res.status(403).json({message: "This user is not authorized to Delete this project."});
+    // }
 
-    await Task.deleteMany({ project: req.params.projectId });
+
     
-    const project = await Project.findByIdAndDelete(req.params.projectId)
-    res.json({message: "Project DELETED"})
+    res.json({message: "TASK DELETED"})
   } catch (error) {
     res.status(500).json({error: error.message})
   }
