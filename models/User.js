@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema({
@@ -31,12 +30,17 @@ const userSchema = new mongoose.Schema({
 
 // Set up pre-save middleware to create password
 userSchema.pre("save", async function (next) {
-  if (this.isNew || this.isModified("password")) {
+  try {
+
+    if (this.isNew || this.isModified("password")) {
     const saltRounds = 10;
     this.password = await bcrypt.hash(this.password, saltRounds);
   }
 
-  //   next();
+    next();
+} catch (err) {
+  next (err);
+}
 });
 
 // Compare the incoming password with the hashed password

@@ -1,6 +1,7 @@
 const express=require('express')
-const {authMiddleware}=require('../middlewares/auth')
+const { authMiddleware }=require('../middlewares/auth')
 const Project=require('../models/Project')
+const Task = require ('../models/Task')
 
 const projectRouter=express.Router()
 
@@ -10,7 +11,7 @@ projectRouter.use(authMiddleware)
 /**
  * GET/api/projects
  */
-projectRouter.get('/',async(req,res)=>{
+projectRouter.get('/',async(req, res) =>{
     try{
         const userProjects=await Project.find({user:req.user._id})
 
@@ -38,7 +39,8 @@ projectRouter.get("/:projectId", async (req, res) => {
     console.log(project.user);
     
     if (project.user.toString() !== req.user._id) {
-      return res.status(403).json({ message: "User is not authorized!" });
+      return
+       res.status(403).json({ message: "User is not authorized!" });
     }
     res.json(project);
   } catch (error) {
@@ -97,13 +99,15 @@ projectRouter.delete("/:projectId", async (req, res) => {
     if (req.user._id !== deleteProject.user.toString()){
       return res.status(403).json({message: "This user is not authorized to Delete this project."})
     }
+
+    await Task.deleteMany({ project: req.params.projectId });
+    
     const project = await Project.findByIdAndDelete(req.params.projectId)
     res.json({message: "Project DELETED"})
   } catch (error) {
     res.status(500).json({error: error.message})
   }
 });
-
 
 
 module.exports = projectRouter

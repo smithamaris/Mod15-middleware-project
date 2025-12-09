@@ -14,13 +14,14 @@ function authMiddleware(req, res, next) {
   
   if (!token) {
     return res.status(403).json({ message: "Please Login or Register" })
-    next();
+    // next();
   }
   
   // If token can be verified, add the decoded user's data to the request so it can be accessed in the resolver
   try {
     const { data } = jwt.verify(token, secret, { maxAge: expiration });
     req.user = data;
+    return next();
   } catch {
     console.log("Invalid token");
   }
