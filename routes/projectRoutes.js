@@ -1,6 +1,6 @@
-const express=require('express')
+const express = require('express')
 const { authMiddleware }=require('../middlewares/auth')
-const Project=require('../models/Project')
+const Project = require('../models/Project')
 const Task = require ('../models/Task')
 
 const projectRouter=express.Router()
@@ -40,7 +40,7 @@ projectRouter.get("/:projectId", async (req, res) => {
     
     if (project.user.toString() !== req.user._id) {
       return
-       res.status(403).json({ message: "User is not authorized!" });
+       return res.status(403).json({ message: "User is not authorized!" });
     }
     res.json(project);
   } catch (error) {
@@ -48,6 +48,29 @@ projectRouter.get("/:projectId", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+//get the task only 
+projectRouter.get("/:projectId/tasks", async (req, res) => {
+	try {
+		const { projectId } = req.params;
+		const project = await Project.findById(projectId);
+		if (!project) {
+			return res.status(404).json({
+				message: Project`Project with id: ${projectId} not found!`,
+			});
+		}
+		//console.log(req.user)
+		if (project.user.toString() !== req.user._id.toString()) {
+			return res.status(403).json({ message: "User is not authorized!" });
+		}
+		const tasks = await Task.find({ project: projectId });
+		res.json(tasks);
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
 
 /**
  * POST /api/projects
@@ -82,7 +105,7 @@ projectRouter.put("/:projectId", async (req, res) => {
     const project = await Project.findByIdAndUpdate( req.params.projectId, req.body, {new:true})// need more explanation
     res.json(project)
   } catch (error) {
-    console.log("errer is here", req.body)
+    console.log("error is here", req.body)
     res.status(500).json({error: error.message})
   }
 });
@@ -97,7 +120,7 @@ projectRouter.delete("/:projectId", async (req, res) => {
   try {
         const deleteProject = await Project.findById(req.params.projectId)//finding the user's project with the help of id.
     if (req.user._id !== deleteProject.user.toString()){
-      return res.status(403).json({message: "This user is not authorized to Delete this project."})
+      return res.status(403).json({message: "This user is not authorized to Delete this project."});
     }
 
     await Task.deleteMany({ project: req.params.projectId });

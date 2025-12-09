@@ -21,12 +21,13 @@ taskRouter.get('/',async(req, res) =>{
 });
 
 /**
- * POST /api/tasks
+ * POST /api/tasks/projectID/task
  */
 
-taskRouter.post("/", async (req, res) => {
+taskRouter.post("/:projectId/task", async (req, res) => {
   try {
-    const { task: projectId } = req.params.id;
+    // const { task: projectId } = req.params.id;
+    const { projectId } = req.params;
     const  project = await Project.findById(projectId);
     if (!project)  {
         return res.status(404).json({ message: 'Project not found!' });
@@ -37,7 +38,7 @@ taskRouter.post("/", async (req, res) => {
 
     const task = await Task.create({
       ...req.body,
-      user: req.user._id,
+      project: projectId
     });
 
     res.status(201).json(task);
@@ -48,23 +49,27 @@ taskRouter.post("/", async (req, res) => {
 });
 
 /**
- * GET /api/tasks/:taskId
+ * GET /api/projects/:projectId
  */
-taskRouter.get('/:id', async (req, res) => {
-    try {
-        const task = await Task.findById(req.params.id)
-        if (!task) return res.status(404).json({ message: 'Task not found' });
-
-        if (task.user.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Not authorized to view this task' });
-        }
-        const tasks=await Task.find({ project: projectId })
-
-        res.json(task)
-    } catch (error) {
-        res.status(500).json({error: error.message });
-        
-    }
+taskRouter.get("/:projectId", async (req, res) => {
+	try {
+		const { projectId } = req.params;
+		const project = await Project.findById(projectId);
+		if (!project) {
+			return res.status(404).json({
+				message: Project`Project with id: ${projectId} not found!`,
+			});
+		}
+		//console.log(req.user)
+		if (project.user.toString() !== req.user._id.toString()) {
+			return res.status(403).json({ message: "User is not authorized!" });
+		}
+		const tasks = await Task.find({ project: projectId });
+		res.json(tasks);
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: error.message });
+	}
 });
 
 /**
@@ -89,22 +94,24 @@ taskRouter.put('/:id', async (req, res) => {
     }
 });
 
-// Delete /api/delete
+/**
+ * DELETE /api/projects/projectId
+ */
 
-taskRouter.delete('/:id', async (req, res) => {
-    try {
-        const task = await Task.findById(req.params.id)
-        if (!task) return res.status(404).json({ message: 'Task not found' });
-
-        if (task.user.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Not authorized to delete this task' });
-        }
-
-        await Task.findByIdAndDelete(req.params.id)
-        res.json({ message: 'Task deleted' });
-    } catch (error) {
-        res.status(500).json({ error: error.message});
+taskRouter.delete("/:projectId", async (req, res) => {
+  try {
+        const deleteProject = await Project.findById(req.params.projectId)//finding the user's project with the help of id.
+    if (req.user._id !== deleteProject.user.toString()){
+      return res.status(403).json({message: "This user is not authorized to Delete this project."});
     }
+
+    await Task.deleteMany({ project: req.params.projectId });
+    
+    const project = await Project.findByIdAndDelete(req.params.projectId)
+    res.json({message: "Project DELETED"})
+  } catch (error) {
+    res.status(500).json({error: error.message})
+  }
 });
 
 module.exports = taskRouter
