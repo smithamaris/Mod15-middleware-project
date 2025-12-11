@@ -38,10 +38,9 @@ projectRouter.get("/:projectId", async (req, res) => {
     console.log(req.user._id);
     console.log(project.user);
     
-    if (project.user.toString() !== req.user._id) {
-      return
-       return res.status(403).json({ message: "User is not authorized!" });
-    }
+    if (project.user.toString() !== req.user._id.toString()) {
+  return res.status(403).json({ message: "User is not authorized!" });
+}
     res.json(project);
   } catch (error) {
     console.error(error);
@@ -70,6 +69,8 @@ projectRouter.get("/:projectId/tasks", async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
+
+
 
 
 /**
